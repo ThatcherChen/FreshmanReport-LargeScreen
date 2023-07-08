@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <title>新生报道数据分析平台</title>
+    <!-- Scale Mode -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap css -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <!-- jQuery -->
+    <script src="js/jquery.min.js"></script>
+    <!-- Bootstrap js -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- echarts JS -->
+    <script src="js/echarts.min.js"></script>
+    <!-- Data, map and style sheet -->
+    <script src="js/visual.js"></script>
+    <script src="js/china.js"></script>
+    <script src="js/chartMap.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/visual.css">
+</head>
+
+<body class="ksh">
+
+<!-- 加载动画 -->
+<div id="load">
+    <div class="load_img">
+        <img class="load_p1" src="images/load_anim1.png" alt="">
+        <img class="load_p2" src="images/load_anim2.png" alt="">
+    </div>
+</div>
+
+<div class="head_top" style="display: flex; justify-content: flex-start">
+    <img src="images/head_left.png" style="height: 30px; width: 35%" alt="">
+    <img src="images/head_mid.png" style="height: 40px; width: 35%" alt="">
+    <img src="images/head_right.png" style="height: 30px; width: 35%" alt="">
+</div>
+
+<div class="visual">
+    <div class="visual_left">
+        <div class="visual_box">
+            <div class="visual_title">
+                <span>报到完成情况</span>
+                <img src="images/subtitle.png" alt="">
+            </div>
+            <div class="visual_chart" id="report_task">
+            </div>
+        </div>
+        <div class="visual_box">
+            <div class="visual_title">
+                <span>学生男女比例</span>
+                <img src="images/subtitle.png" alt="">
+            </div>
+            <div class="visual_chart" id="student_gender">
+            </div>
+        </div>
+        <div class="visual_box">
+            <div class="visual_title">
+                <span>学生报到交通方式</span>
+                <img src="images/subtitle.png" alt="">
+            </div>
+            <div class="visual_chart transport">
+                <div class="visual_chart" id="student_transport"></div>
+            </div>
+        </div>
+    </div>
+    <div class="visual_con">
+        <div class="visual_conTop">
+            <div class="visual_conTop_box visual_conTop1">
+                <div>
+                    <h3>已报到人数</h3>
+                    <p id="report_count" style="padding-left: 30px">0</p>
+                </div>
+            </div>
+            <div class="visual_conTop_box visual_conTop1">
+                <div>
+                    <h3>未报到人数</h3>
+                    <p id="unreported_count" style="padding-left: 30px">0</p>
+                </div>
+            </div>
+            <div class="visual_conTop_box visual_conTop2">
+                <div>
+                    <h3>应报到人数</h3>
+                    <p id="all_count" style="padding-left: 30px">5000</p>
+                </div>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="visual_conBot">
+            <img class="visual_conBot_l" src="images/edge_left_up.png" alt="">
+            <img class="visual_conBot_2" src="images/edge_right_up.png" alt="">
+            <img class="visual_conBot_3" src="images/edge_right_bottom.png" alt="">
+            <img class="visual_conBot_4" src="images/edge_left_bottom.png" alt="">
+            <div class="visual_chart_text">
+                <h1>学生管理+大数据</h1>
+                <h2>学生来源地理分布</h2>
+            </div>
+            <div class="visual_chart" id="big_map"></div>
+            <div class="visual_conBot_bot">
+                <div class="visual_sch_left">
+                    <h3>各学院报到情况</h3>
+                    <a href="javascript:switchData('all')" style="display: block;" class="active">全校数据</a>
+                    <a href="javascript:switchData('ee')">电气工程及自动化学院</a>
+                    <a href="javascript:switchData('mc')">机械工程及自动化学院</a>
+                    <a href="javascript:switchData('tx')">微电子与通信学院</a>
+                    <a href="javascript:switchData('cs')">计算机学院</a>
+                    <a href="javascript:switchData('sw')">软件学院</a>
+                </div>
+                <div class="visual_sch_right">
+                    <div class="visual_sch_right_box" id="sch_stu_bch"></div>
+                    <div class="visual_sch_right_box" id="sch_stu_mas"></div>
+                    <div class="visual_sch_right_box" id="sch_stu_phd"></div>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+    <div class="visual_right">
+        <div class="visual_box">
+            <div class="visual_title">
+                <span>学生兴趣分布</span>
+                <img src="images/subtitle.png" alt="">
+            </div>
+            <div class="visual_chart" id="student_interest"></div>
+        </div>
+        <div class="visual_box">
+            <div class="visual_title">
+                <span>各省市学生分布</span>
+                <img src="images/subtitle.png" alt="">
+            </div>
+            <div class="visual_chart" id="student_region">
+            </div>
+        </div>
+        <div class="visual_box">
+            <div class="visual_title">
+                <span>实时报到滚动</span>
+                <img src="images/subtitle.png" alt="">
+            </div>
+            <div class="visual_chart" style="overflow: hidden" id="report_in_time" onmouseover="rollStop()"
+                 onmouseout="rollStart(60)">
+                <ul id="rolling_list">
+                </ul>
+                <ul id="rolling_back"></ul>
+            </div>
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+
+<script type="text/javascript">
+    // load animation
+    $(function () {
+        const a = $('.visual_sch_left a');
+        for (var i = 0; i < a.length; i++) {
+            a[i].index = i;
+            a[i].onclick = function () {
+                for (var i = 0; i < a.length; i++) {
+                    a[i].className = ''
+                }
+                this.className = 'active'
+            }
+        }
+
+        const fillH = $('.trans_box').height();
+        const fillTwo = fillH - 2;
+        $('.trans_box').css('line-height', fillH + 'px')
+        $('.trans_smallBlk>div').css('line-height', fillTwo + 'px')
+        $('#load').fadeOut(1000)
+        setTimeout(function () {
+                $('#load').remove()
+        }, 1100);
+    })
+
+    // 报到完成情况
+    const myChartTask = echarts.init(document.getElementById('report_task'));
+    myChartTask.setOption(option_task);
+    // 学生男女比例
+    const myChartGender = echarts.init(document.getElementById('student_gender'));
+    myChartGender.setOption(option_gender);
+    // 学生交通选择
+    const myChartTp = echarts.init(document.getElementById('student_transport'));
+    myChartTp.setOption(option_transport);
+    // 大地图
+    const myChartMap = echarts.init(document.getElementById('big_map'));
+    myChartMap.setOption(option_map);
+    // 学院报到人数(本科)
+    const myChartSchBac = echarts.init(document.getElementById('sch_stu_bch'));
+    myChartSchBac.setOption(option_sch_stu_bch);
+    // 学院报到人数(硕士)
+    const myChartSchMas = echarts.init(document.getElementById('sch_stu_mas'));
+    myChartSchMas.setOption(option_sch_stu_mas);
+    // 学院报到人数(博士)
+    const myChartSchPhd = echarts.init(document.getElementById('sch_stu_phd'));
+    myChartSchPhd.setOption(option_sch_stu_phd);
+    // 学生兴趣分布
+    const myChartInterest = echarts.init(document.getElementById('student_interest'));
+    myChartInterest.setOption(option_stu_interest);
+    // 各省市学生
+    const myChartRegion = echarts.init(document.getElementById('student_region'));
+    myChartRegion.setOption(option_region);
+
+    const report_count_text = document.getElementById('report_count');
+    report_count_text.innerHTML = stu_reported.toString(10);
+    const unreported_count_text = document.getElementById('unreported_count');
+    unreported_count_text.innerHTML = (all_university_stu - stu_reported).toString(10);
+    const all_count_text = document.getElementById('all_count');
+    all_count_text.innerHTML = all_university_stu.toString(10);
+
+    var regionBlockIndex = 0;
+
+    const xhr = new XMLHttpRequest();
+
+    // 学院数据集Switch
+    function switchData(school) {
+        currentSch = school;
+    }
+
+    function updateSchDataSet(list) {
+        var newBch = 200;
+        var newMas = 200;
+        var newPhd = 200;
+        for (const degree_item of list) {
+            if (degree_item.degree === '本科') newBch = degree_item.count;
+            else if (degree_item.degree === '硕士') newMas = degree_item.count;
+            else if (degree_item.degree === '博士') newPhd = degree_item.count;
+            else console.log("Error!");
+        }
+        option_sch_stu_bch.series[0].data[0].value = newBch;
+        option_sch_stu_bch.series[0].data[1].value = 200 - newBch;
+        option_sch_stu_mas.series[0].data[0].value = newMas;
+        option_sch_stu_mas.series[0].data[1].value = 200 - newMas;
+        option_sch_stu_phd.series[0].data[0].value = newPhd;
+        option_sch_stu_phd.series[0].data[1].value = 200 - newPhd;
+    }
+
+    function updateView() {
+        myChartSchBac.setOption(option_sch_stu_bch);
+        myChartSchMas.setOption(option_sch_stu_mas);
+        myChartSchPhd.setOption(option_sch_stu_phd);
+        myChartTask.setOption(option_task);
+        myChartGender.setOption(option_gender);
+        myChartInterest.setOption(option_stu_interest);
+        myChartTp.setOption(option_transport);
+        myChartSchBac.setOption(option_sch_stu_bch);
+        myChartSchMas.setOption(option_sch_stu_mas);
+        myChartSchPhd.setOption(option_sch_stu_phd);
+        myChartRegion.setOption(option_region);
+        myChartMap.setOption(option_map);
+    }
+
+    function fetchAndUpdate(func, serverInterface) {
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === xhr.DONE) {
+                if (xhr.status === 200) {
+                    func(xhr.responseText);
+                } else {
+                    console.error("Failed to get.")
+                }
+            }
+        }
+        xhr.open("GET", `http://192.168.1.163:8083/${serverInterface}`, false);
+        xhr.send(null);
+    }
+
+    setInterval(function () {
+        // 更新报到学生人数
+        fetchAndUpdate((resp) => {
+            stu_reported = parseInt(resp, 10);
+            option_task.series[0].data[0].value = stu_reported;
+            option_task.series[0].data[1].value = all_university_stu - stu_reported;
+            report_count_text.innerHTML = stu_reported.toString(10);
+            unreported_count_text.innerHTML = (all_university_stu - stu_reported).toString(10);
+            all_count_text.innerHTML = all_university_stu.toString(10);
+        }, 'countNumber');
+        // 更新男女比例
+        fetchAndUpdate((resp) => {
+            const gender_list = JSON.parse(resp);
+            option_gender.series[0].data[0].value = gender_list[1].count;
+            option_gender.series[0].data[1].value = gender_list[0].count;
+        }, 'countGender');
+        // 更新兴趣
+        fetchAndUpdate((resp) => {
+            const interest_list = JSON.parse(resp);
+            const interest_list_converted = [];
+            for (const interest_item of interest_list) {
+                interest_list_converted.push({
+                    name: interest_item.interest,
+                    value: interest_item.count
+                })
+            }
+            option_stu_interest.series[0].data = interest_list_converted.sort(function (a, b) {
+                return a.value - b.value;
+            });
+        }, 'countInterest');
+        // 更新各学位人数
+        if (currentSch === 'all') {
+            fetchAndUpdate((resp) => {
+                const degree_list = JSON.parse(resp);
+                updateSchDataSet(degree_list);
+            }, 'countDegree');
+        } else {
+            fetchAndUpdate((resp) => {
+                const degree_list = JSON.parse(resp);
+                updateSchDataSet(degree_list);
+            }, `countCollegeDegree?name=${currentSch}`);
+        }
+        // 更新交通方式
+        fetchAndUpdate((resp) => {
+            const traffic_list = JSON.parse(resp);
+            option_transport.xAxis[0].data.length = 0;
+            option_transport.series[0].data.length = 0;
+            for (var traffic_item of traffic_list) {
+                option_transport.xAxis[0].data.push(traffic_item.traffic);
+                option_transport.series[0].data.push(traffic_item.count);
+            }
+        }, 'countTraffic');
+        // 更新地域人数
+        fetchAndUpdate((resp) => {
+            const region_list = JSON.parse(resp);
+            option_region.yAxis.data.length = 0;
+            option_region.series[0].data.length = 0;
+            option_region.series[1].data.length = 0;
+            for (var i = 5 * regionBlockIndex; i < Math.min(5 * regionBlockIndex + 5, region_list.length); i++) {
+                option_region.yAxis.data.push(region_list[i].region);
+                option_region.series[0].data.push(region_list[i].count);
+                option_region.series[1].data.push(region_list[i].count);
+            }
+            if ((regionBlockIndex + 1) * 5 >= region_list.length) {
+                regionBlockIndex = 0;
+            } else {
+                regionBlockIndex += 1;
+            }
+        }, 'countRegion');
+        // 更新大地图
+        fetchAndUpdate((resp) => {
+            const all_stu_list = JSON.parse(resp);
+            option_map.series[0].data.length = 0;
+            option_map.series[1].data.length = 0;
+            for (const stu_item of all_stu_list) {
+                const area_name = stu_item.region.split('-')[stu_item.region.split('-').length - 1];
+                const area_obj = allCities.find(city => city.area === area_name);
+                const area_lng = area_obj.lng;
+                const area_lat = area_obj.lat;
+                allData.cities.push({
+                    itemStyle: {
+                        normal: {
+                            color: '#F58158'
+                        }
+                    },
+                    name: area_name,
+                    symbolSize: 2,
+                    value: [area_lng, area_lat, 1.0]
+                });
+                allData.moveLines.push({
+                    coords: [[area_lng, area_lat], [106.46446511092543, 29.547192516541124]],
+                    fromName: area_name,
+                    toName: "重庆"
+                });
+            }
+            option_map.series[0].data = allData.cities;
+            option_map.series[1].data = allData.moveLines;
+        }, 'queryAll')
+        // 更新图表
+        updateView();
+    }, 2000);
+
+    fetchAndUpdate((resp) => {
+        const stu_list = JSON.parse(resp);
+        var stu_rolling_list = "";
+        for (const stu of stu_list) {
+            stu_rolling_list += `<li>${stu.idNumber}-${stu.name}-${stu.college}-${stu.major}</li>`
+        }
+        document.getElementById('rolling_list').innerHTML = stu_rolling_list;
+    }, 'queryAll');
+
+    var timer = null;
+
+    function rollStop() {
+        clearInterval(timer);
+    }
+
+    function rollStart(t) {
+        var rolling_list = document.getElementById('rolling_list');
+        var rolling_box = document.getElementById('report_in_time');
+        rollStop();
+        timer = setInterval(() => {
+            if (rolling_box.scrollTop >= rolling_list.scrollHeight) {
+                rolling_box.scrollTop = 0;
+            } else {
+                rolling_box.scrollTop += 2;
+            }
+        }, t);
+    }
+
+    function roll(t) {
+        var rolling_list = document.getElementById('rolling_list');
+        var rolling_back = document.getElementById('rolling_back');
+        var rolling_box = document.getElementById('report_in_time');
+        rolling_back.innerHTML = rolling_list.innerHTML;
+        rolling_box.scrollTop = 0;
+        rollStart(t);
+    }
+
+    roll(60);
+
+</script>
+</body>
+</html>
