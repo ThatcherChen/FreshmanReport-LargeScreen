@@ -209,8 +209,6 @@
 
     var regionBlockIndex = 0;
 
-    const xhr = new XMLHttpRequest();
-
     // 学院数据集Switch
     function switchData(school) {
         currentSch = school;
@@ -250,6 +248,7 @@
     }
 
     function fetchAndUpdate(func, serverInterface) {
+        const xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (xhr.readyState === xhr.DONE) {
                 if (xhr.status === 200) {
@@ -259,7 +258,7 @@
                 }
             }
         }
-        xhr.open("GET", `http://localhost:8083/${serverInterface}`, false);
+        xhr.open("GET", `http://82.157.62.219:8083/${serverInterface}`, true);
         xhr.send(null);
     }
 
