@@ -277,7 +277,7 @@ html, body, form {
 }
 
 .visual_con .visual_conTop .visual_conTop1 > div {
-    background: url(container2.png) no-repeat;
+    background: url(/images/container2.png) no-repeat;
     background-size: 100% 100%;
 }
 
@@ -288,7 +288,7 @@ html, body, form {
 }
 
 .visual_con .visual_conTop .visual_conTop2 > div {
-    background: url(container1.png) no-repeat;
+    background: url(/images/container1.png) no-repeat;
     background-size: 100% 100%;
 }
 
